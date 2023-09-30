@@ -1,6 +1,9 @@
 # Databricks notebook source
 import requests
 import json
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from pyspark.sql.types import StructType, StructField, StringType
 
 # COMMAND ----------
 
@@ -26,22 +29,39 @@ def credentials ():
 
     with open('/dbfs/FileStore/tables/Tokens/payload.json', 'r+') as j:
         payload = json.load(j)
-    return ref_token, headers,payload
+    return headers,payload
 
-Data = []
-Sentimento = []
-Valor = []
 
-i = 0
-# while True:
-#     payload['page'] = i
-#     request_url = 'https://api2.sprinklr.com/prod2/api/v2/reports/query'
-#     request = requests.post(request_url, json=payload, headers=headers, verify=False)
-#     response = request.text
-#     obj_json2 = json.loads(response)
-#     print(obj_json2['data']['rows'])
-#     spark.createDataFrame()
+def extraction_values_and_merge(headers,payload):
+    i = 0
+    data = []
+    while True:
+        print(i)
+        payload['page'] = i
+        request_url = 'https://api2.sprinklr.com/prod2/api/v2/reports/query'
+        request = requests.post(request_url, json=payload, headers=headers, verify=False)
+        response = request.text
+        obj_json2 = json.loads(response)
+        data.append(obj_json2['data']['rows'])
+        i = i + 1
+        if  120 != len(obj_json2['data']['rows']):
+            break
 
+def create_dataframe(data):
+    data = spark.createDataFrame()
+    for i in range (len(data)):
+        for j in range (len(data[i])):
+            schema = StructType([
+                StructField("Data", StringType(), True),
+                StructField("Sentimento", StringType(), True),
+                StructField("Valor", StringType(), True)
+            ])
+            data_merge = spark.createDataFrame([],schema=schema)
+            
+
+    return data
+headers,payload = credentials()
+data = extraction_values_and_merge(headers,payload)
 
 # COMMAND ----------
 
@@ -53,7 +73,11 @@ dbutils.fs.head("dbfs:/FileStore/tables/Tokens/payload.json")
 
 # COMMAND ----------
 
-ref_token,headers,payload = credentials()
+headers,payload = credentials()
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 
