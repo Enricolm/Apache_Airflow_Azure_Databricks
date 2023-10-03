@@ -5,6 +5,19 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from pyspark.sql.types import StructType, StructField, StringType
 
+
+
+dbutils.fs.mkdirs("dbfs:/FileStore/tables/Tokens/")
+
+
+# COMMAND ----------
+
+display(dbutils.fs.head("dbfs:/FileStore/tables/Tokens/access_token.json"))
+
+# COMMAND ----------
+
+display(dbutils.fs.head("dbfs:/FileStore/tables/Tokens/payload.json"))
+
 # COMMAND ----------
 
 key = 'fnks2xz3k6k8x22vunu399u3'
@@ -46,34 +59,38 @@ def extraction_values_and_merge(headers,payload):
         i = i + 1
         if  120 != len(obj_json2['data']['rows']):
             break
-
-def create_dataframe(data):
-    data = spark.createDataFrame()
-    for i in range (len(data)):
-        for j in range (len(data[i])):
-            schema = StructType([
-                StructField("Data", StringType(), True),
-                StructField("Sentimento", StringType(), True),
-                StructField("Valor", StringType(), True)
-            ])
-            data_merge = spark.createDataFrame([],schema=schema)
-            
-
     return data
+    
+
+def create_dataframe(data_list):
+    schema = StructType([
+        StructField("Data", StringType(), True),
+        StructField("Sentimento", StringType(), True),
+        StructField("Valor", StringType(), True)
+        ])
+    data = spark.createDataFrame([], schema=schema)
+    for i in range (len(data_list)):
+        
+        for j in (data_list[i]):
+          data = data.union(spark.createDataFrame([j], schema=schema))
+    return data
+
 headers,payload = credentials()
 data = extraction_values_and_merge(headers,payload)
+data = create_dataframe(data)
+data.show()
 
 # COMMAND ----------
 
-dbutils.fs.head("dbfs:/FileStore/tables/Tokens/access_token.json")
+data.where(data.Data == "1686798000000").show()
 
 # COMMAND ----------
 
-dbutils.fs.head("dbfs:/FileStore/tables/Tokens/payload.json")
+
 
 # COMMAND ----------
 
-headers,payload = credentials()
+
 
 # COMMAND ----------
 
