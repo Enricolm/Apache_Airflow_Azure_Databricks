@@ -87,7 +87,7 @@ class extracao_valores():
     def criando_pasta(self):
         self.create_dataframe()
         import datetime
-        caminho = f"dbfs:/FileStore/tables/Extraction_Data_Sprin/Data/{str(datetime.date.today().year)}/{str(datetime.date.today().month)}/{str(datetime.date.today().day)}"
+        caminho = f"dbfs:/FileStore/tables/Extraction_Data_Sprin/Data/Bronze/{str(datetime.date.today().year)}/{str(datetime.date.today().month)}/{str(datetime.date.today().day)}"
         dbutils.fs.mkdirs(caminho)
         self.caminho = caminho
 
