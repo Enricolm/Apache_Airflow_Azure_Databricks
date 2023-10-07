@@ -109,7 +109,7 @@ extract.save_dataframe()
 
 # COMMAND ----------
 
-dbutils.fs.ls("dbfs:/FileStore/tables/Extraction_Data_Sprin/Data/2023/10/4")
+#dbutils.fs.ls("dbfs:/FileStore/tables/Extraction_Data_Sprin/Data/2023/10/4")
 
 # COMMAND ----------
 
